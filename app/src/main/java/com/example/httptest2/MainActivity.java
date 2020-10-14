@@ -20,6 +20,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    
+    //HMAC_SHA256 암호화 통신
 
     TextView tv,tv_timer;
     String resultText;

@@ -93,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
+                // TIMESTAMP 헤더, 암호 헤더 추가
+                conn.setRequestProperty("bx-timestamp-v1", System.currentTimeMillis()+"");
+
                 // POST방식으로 json 데이터를 전송하고 서버로부터 InputStreamReader로 json데이터 값을 응답받는다.
                 OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
 

@@ -21,6 +21,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    //https
+
     TextView tv,tv_timer;
     String resultText;
     int num = 0;

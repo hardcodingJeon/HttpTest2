@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().setTitle("Http통신, asyncTask");
+        getSupportActionBar().setTitle("Http통신, asyncTask, HMAC SHA256암호화 통신");
         tv = findViewById(R.id.textView);
         tv_timer = findViewById(R.id.textView2);
 

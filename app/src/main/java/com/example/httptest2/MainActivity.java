@@ -21,6 +21,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    // master
+
     TextView tv,tv_timer;
     String resultText;
     int num = 0;
@@ -66,15 +68,17 @@ public class MainActivity extends AppCompatActivity {
     public void clickBtn(View view) {
         try {
             final Task task = new Task();
+            // .excute(); 메소드 호출하면 AsyncTask 클래스의 doInBackground(비동기 스레드 메소드)가 발동된다.
             task.execute();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+    
 
     public class Task extends AsyncTask<String, Integer, String> {
-    // AsyncTask를 상속받은 커스텀 Task클래스
+    // AsyncTask를 상속받은 커스텀 Task클래스, AsyncTask를 상속받던지 AsyncTask객체를 생성하던지
 
 
         protected String doInBackground(String... urls) {

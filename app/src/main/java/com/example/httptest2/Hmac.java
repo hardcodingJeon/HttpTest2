@@ -10,7 +10,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Hmac {
-    // todo : hash 알고리즘 선택, HMAC SHA256    SHA256 둘다 시도해볼것
     private static final String ALGOLISM = "HmacSHA256";
     // Mac init할때 필요한 secretKey
     private static final String secretKey = "xJaV4Vj5mHcxORxV9kQdEVTfAkO1b8Ne7qIz5Y6c";

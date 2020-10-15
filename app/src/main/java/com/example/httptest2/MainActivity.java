@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     public static String resultText;
     public static int num = 0;
 
-    public String str, receiveMsg;
+    public String str;
     public StringBuffer buffer;
 
     @Override
@@ -113,8 +113,9 @@ public class MainActivity extends AppCompatActivity {
                 wr.write(query,0,query.length());
                 wr.flush();
                 wr.close();
-                // request(요청)를 ouputstream으로 한후 responsecode가 200으로 정상 리스폰 되었다면
 
+                // request(요청)를 ouputstream으로 한후 responsecode가 200으로 정상 리스폰 되었다면
+                // output으로 데이터 전송하고 flush, close해주고 input으로 response받아준다.
                 if (conn.getResponseCode() == conn.HTTP_OK) {   //conn.HTTP_OK 는 상수 200
 
                     InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");

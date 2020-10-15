@@ -19,13 +19,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
     
     //HMAC_SHA256 암호화 통신
 
-    TextView tv,tv_timer;
-    String resultText;
-    int num = 0;
+    public static TextView tv,tv_timer;
+    public static String resultText;
+    public static int num = 0;
 
     public String str, receiveMsg;
     public StringBuffer buffer;
@@ -82,10 +84,11 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... urls) {
             //doInBackground() 비동기 스레드 (백그라운드에서 작업하는 메소드)
             URL url = null;
+            String receiveMsg = "";
             try {
                 url = new URL("https://bnc-iot.com:33333/app/DALONG");
 
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                 // .setRequestProperty() 헤더추가 메소드
                 conn.setRequestProperty("content-type", "application/json; charset=utf-8"); // charset 추가해서 에러 고쳤음, 원래는 utf=8만 썼었음
                 conn.setRequestMethod("POST");
@@ -93,13 +96,10 @@ public class MainActivity extends AppCompatActivity {
 
                 // TIMESTAMP 헤더, 암호 헤더 추가
                 String time = System.currentTimeMillis()+"";
-                Log.e("time",time);
                 conn.setRequestProperty("bx-timestamp-v1", time);
 
                 Hmac hmac = new Hmac(time);
-                Log.e("hmac access key",hmac.keyMsg);
                 String passHeader = hmac.hget();
-                Log.e("passHeader",passHeader);
                 conn.setRequestProperty("bx-signature-v1",passHeader);
 
                 conn.setUseCaches(false);
@@ -114,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
                 wr.flush();
                 wr.close();
                 // request(요청)를 ouputstream으로 한후 responsecode가 200으로 정상 리스폰 되었다면
+
                 if (conn.getResponseCode() == conn.HTTP_OK) {   //conn.HTTP_OK 는 상수 200
+
                     InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
                     BufferedReader reader = new BufferedReader(tmp);    // http응답이 reader에 담겨 있다.
                     StringBuffer buffer_in = new StringBuffer();
@@ -129,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                     // 받은 json형식의 문자열중 마지막에 SUCCESS를 삭제후 GSON으로 파싱할것, 마지막 SUCCESS 문자때문에 Json형식이 깨져서 파싱이 불가하기 때문 , .replace()후 리턴받아야함(원본값이 바뀌는것이 아님)
                     receiveMsg = receiveMsg.replace("SUCCESS","");
 
+                    return receiveMsg;
+
                     // Internal storage 저장(데이터가 갱신되는게 아니라 누적됨), 경로 : data - data - 해당패키지명 - files
 //                    FileOutputStream fos = openFileOutput("data.txt",MODE_APPEND);  //MODE_APPEND 이어쓰기 , MODE_PRIVATE 덮어쓰기
 //                    // APK 생성되는 폴더에 데이터가 저장된다,앱을 지우지 않는 이상 이 파일은 저장되어 있다, 프로그램 꺼도 저장되있음 , 앱을 지우면 그 데이터도 같이 날아간다
@@ -139,22 +143,37 @@ public class MainActivity extends AppCompatActivity {
 //                    writer.flush(); //병목현상 생길수 있기 때문에 밀어넣는 기능
 //                    writer.close(); //스트림 전송하고 나면 닫아 줘야함
 
-
                 } else {
                     Log.i("통신 결과", conn.getResponseCode() + "에러");
+                    return receiveMsg;
                 }
             }  catch (IOException e) {
                 Log.e("error","아웃풋스트림 에러 : "+e.toString());
+                return receiveMsg;
             }
 
+
+            // 조건문이나 반복문안에만 리턴이 있는경우 조건문이나 반복문안으로 들어가지 않을경우 return을 만날 수 없으므로 missing return에러가 발생
+
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(String result) {
+
+            //doInBackground() 메소드의 리턴값이 onPostExecute 메소드의 파라미터로 받아진다, onPostExecute에서 화면 갱신(UI스레드)작업 해주자.
+            //doInBAckground()에서는 response 정보만 받고 (수신만하기) 값을 리턴으로 onPostExecute()로 넘겨 후 처리를 해준다.
+
             buffer = new StringBuffer();
-            if (receiveMsg!=null){
+            if (result!=null){
 
                 try {
 //                    Gson gson = new Gson();
                     Gson gson = new GsonBuilder().setLenient().create();
-                    Log.e("receiveMsg-2",receiveMsg);
-                    VO vo = gson.fromJson(receiveMsg, VO.class);
+                    Log.e("receiveMsg-2",result);
+                    VO vo = gson.fromJson(result, VO.class);
                     ArrayList<VO.member> items = vo.device;
 
                     for (int i=0 ; i<items.size() ; i++){
@@ -171,18 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-            // 조건문이나 반복문안에만 리턴이 있는경우 조건문이나 반복문안으로 들어가지 않을경우 return을 만날 수 없으므로 missing return에러가 발생
-            return buffer.toString();
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-
-        }
-
-        protected void onPostExecute(String result) {
-
-            //doInBackground() 메소드의 리턴값이 onPostExecute 메소드의 파라미터로 받아진다, onPostExecute에서 화면 갱신(UI스레드)작업 해주자.
-            tv.setText(result);
+            tv.setText(buffer.toString());
 
         }
     }

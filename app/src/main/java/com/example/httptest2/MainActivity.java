@@ -83,39 +83,46 @@ public class MainActivity extends AppCompatActivity {
             //doInBackground() 비동기 스레드 (백그라운드에서 작업하는 메소드)
             URL url = null;
             try {
-
                 url = new URL("https://bnc-iot.com:33333/app/DALONG");
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                // .setRequestProperty() 헤더추가 메소드
                 conn.setRequestProperty("content-type", "application/json; charset=utf-8"); // charset 추가해서 에러 고쳤음, 원래는 utf=8만 썼었음
                 conn.setRequestMethod("POST");
+
+
+                // TIMESTAMP 헤더, 암호 헤더 추가
+                String time = System.currentTimeMillis()+"";
+                Log.e("time",time);
+                conn.setRequestProperty("bx-timestamp-v1", time);
+
+                Hmac hmac = new Hmac(time);
+                Log.e("hmac access key",hmac.keyMsg);
+                String passHeader = hmac.hget();
+                Log.e("passHeader",passHeader);
+                conn.setRequestProperty("bx-signature-v1",passHeader);
+
                 conn.setUseCaches(false);
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
-                // TIMESTAMP 헤더, 암호 헤더 추가
-                conn.setRequestProperty("bx-timestamp-v1", System.currentTimeMillis()+"");
-
                 // POST방식으로 json 데이터를 전송하고 서버로부터 InputStreamReader로 json데이터 값을 응답받는다.
                 OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-
                 String query = "{\"req_msg\":1}";   // {"req_msg":1}
 
                 wr.write(query,0,query.length());
                 wr.flush();
                 wr.close();
-
                 // request(요청)를 ouputstream으로 한후 responsecode가 200으로 정상 리스폰 되었다면
                 if (conn.getResponseCode() == conn.HTTP_OK) {   //conn.HTTP_OK 는 상수 200
                     InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
                     BufferedReader reader = new BufferedReader(tmp);    // http응답이 reader에 담겨 있다.
                     StringBuffer buffer_in = new StringBuffer();
-
                     while ((str = reader.readLine()) != null) {
                         buffer_in.append(str);
                     }
-
                     receiveMsg = buffer_in.toString();
+                    Log.e("receiveMsg-1",receiveMsg);
 
                     reader.close();
 
@@ -140,26 +147,31 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("error","아웃풋스트림 에러 : "+e.toString());
             }
 
+            buffer = new StringBuffer();
             if (receiveMsg!=null){
 
-//                Gson gson = new Gson();
-                Gson gson = new GsonBuilder().setLenient().create();
-                VO vo = gson.fromJson(receiveMsg, VO.class);
-                ArrayList<VO.member> items = vo.device;
+                try {
+//                    Gson gson = new Gson();
+                    Gson gson = new GsonBuilder().setLenient().create();
+                    Log.e("receiveMsg-2",receiveMsg);
+                    VO vo = gson.fromJson(receiveMsg, VO.class);
+                    ArrayList<VO.member> items = vo.device;
 
-                buffer = new StringBuffer();
+                    for (int i=0 ; i<items.size() ; i++){
+                        buffer.append("device_id_"+i+" : "+items.get(i).device_id+"\n"+
+                                "last_latitude_"+i+" : "+items.get(i).last_latitude+"\n"+
+                                "last_longitude_"+i+" : "+items.get(i).last_longitude+"\n"+
+                                "last_device_battery_"+i+" : "+items.get(i).last_device_battery+"\n"+
+                                "last_bike_battery_"+i+" : "+items.get(i).last_bike_battery+"\n"+
+                                "bike_error_code_"+i+" : "+items.get(i).bike_error_code+"\n\n");
+                    }
 
-                for (int i=0 ; i<items.size() ; i++){
-                    buffer.append("device_id_"+i+" : "+items.get(i).device_id+"\n"+
-                            "last_latitude_"+i+" : "+items.get(i).last_latitude+"\n"+
-                            "last_longitude_"+i+" : "+items.get(i).last_longitude+"\n"+
-                            "last_device_battery_"+i+" : "+items.get(i).last_device_battery+"\n"+
-                            "last_bike_battery_"+i+" : "+items.get(i).last_bike_battery+"\n"+
-                            "bike_error_code_"+i+" : "+items.get(i).bike_error_code+"\n\n");
+                }catch (Exception e){
+
                 }
 
             }
-
+            // 조건문이나 반복문안에만 리턴이 있는경우 조건문이나 반복문안으로 들어가지 않을경우 return을 만날 수 없으므로 missing return에러가 발생
             return buffer.toString();
         }
 

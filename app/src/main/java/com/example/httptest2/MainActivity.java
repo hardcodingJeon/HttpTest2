@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            // 조건문이나 반복문안에만 리턴이 있는경우 조건문이나 반복문안으로 들어가지 않을경우 return을 만날 수 없으므로 missing return에러가 발생
+            // 조건문이나 반복문안에만 리턴이 있는경우 조건문이나 반복문안으로 들어가지 않을때 return을 만날 수 없으므로 missing return에러가 발생
 
         }
 

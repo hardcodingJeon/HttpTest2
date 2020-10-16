@@ -28,6 +28,7 @@ public class Hmac {
             // hash 알고리즘과 암호화 key 적용
             Mac hasher = Mac.getInstance(ALGOLISM);
 
+            // Hmac 키 2가지 필요, 1. mac 초기화 할때 시크릿키 필요, 2. 해쉬화 할 키필요
             // secretKey, algolism 넣기
             hasher.init(new SecretKeySpec(secretKey.getBytes(), ALGOLISM));
 
